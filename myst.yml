@@ -39,5 +39,6 @@ site:
   template: book-theme
   title: Fernando Pérez
   options:
-  #   favicon: favicon.ico
-  #   logo: site_logo.png
+    favicon: favicon.ico
+    logo: site_logo.png
+    logo_text: Fernando Pérez

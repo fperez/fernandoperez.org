@@ -31,22 +31,19 @@ My research interests were shaped by years of working on a number of applied pro
 I am convinced that we need better tools for scientific computing, and that our efforts to build them based on the [Python](http://www.python.org) language can make a significant difference to how research is conducted and disseminated. I created the [IPython](http://ipython.org) project while a graduate student in 2001, which has now evolved into the large and collaborative [Project Jupyter](), where a talented team does all the hard work. I am an active member of the community that creates freely available scientific computing tools around the [Scientific Python stack](http://scientific-python.org).
 
 
-:::{admonition} Contact
+:::{note} Contact
 :class: dropdown
 
 **Email:** `fernando.perez-AT-berkeley.edu`
 
 Unfortunately I receive far more email than I can manage; I am perennially far behind. For urgent matters that absoultely require a reply, please cc [fperez.support](mailto:fperez.support@berkeley.edu), who will try to assist.
 
-**Office**
-
-```
-Evans Hall 419
-```
+**Office:** [Evans Hall 419](https://www.berkeley.edu/map/evans-hall)
 
 **Post**
 
-````
+```
+Fernando Pérez
 Statistics Department
 367 Evans Hall
 University of California, Berkeley
