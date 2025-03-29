@@ -38,12 +38,7 @@ project:
             - file: py4science/workshop_berkeley_2008.md
             - file: py4science/workshop_geilo_2013.md
             - file: py4science/workshop_hawaii_2012.md
-            - title: Profiling
-              children:
-                - file: py4science/profiling/index.md
-            - title: Ucb
-              children:
-                - file: py4science/ucb/index.md
+            - file: py4science/profiling/index.md
     - file: about.md
     - file: contact.md
         
@@ -52,6 +47,7 @@ site:
   options:
     logo: resources/fperez-tiny.jpg
     style: resources/style.css
+    favicon: resources/favicon.ico
     folders: true
   nav:
     - title: Science
