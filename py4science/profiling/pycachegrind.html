@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<!-- This file generated using Python HTMLgen module. -->
+<HEAD>
+  <META NAME="GENERATOR" CONTENT="HTMLgen 2.2.2">
+        <TITLE>pycachegrind.py</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FBFBFB">
+<pre><font face="Courier New"><font color="#008000">#!/usr/bin/env python
+</font><font color="#004080">"""
+Profile a script using hotshot and kcachegrind.
+
+This program runs a script under the control of the Python hotshot profiler and
+converts the hotshot results into the Kcachegrind format.  It finally calls
+kcachegrind to visualize the output.
+
+
+Usage:
+
+  pycachegrind.py script.py [script args]
+
+Any arguments after your script name are passed directly to the script in
+sys.argv.
+
+This program leaves two files on disk:
+
+  - script.py.prof: hotshot profile results.
+
+  - script.py.cgrind: hotshot results converted to cachegrind format.
+  
+
+Requirements:
+
+  - kcachegrind.  Used to visualize the results.  It includes hotshot2calltree,
+    the default converter from hotshot to cachegrind format.
+
+Optional:
+    
+  - hotshot2cachegrind.py.  This is hotshot2calltree's ancestor, and if you
+  experience any problems with h2ctree, you may want to test this script
+  instead (I'm not sure, but I've seen a few minor problems that /might/ be
+  bugs in h2ctree).  I've put up a copy of hotshot2cachegrind on the net, since
+  it is not easy to find:
+
+      http://amath.colorado.edu/faculty/fperez/python/profiling
+
+  You'll need to modify a global constant in the source if you wish to use
+  hotshot2cachegrind instead of hotshot2calltree.
+
+    
+Acknowledgements:
+
+  This code is heavily inspired in scripts written by Arnd Baecker and Nikolai
+  Hlubek, and posted to the SciPy mailing lists.
+"""</font>
+
+<font color="#008000">#*****************************************************************************
+</font><font color="#008000">#     Copyright (C) 2006 Fernando Perez. &lt;Fernando.Perez@colorado.edu&gt;
+</font><font color="#008000">#
+</font><font color="#008000">#             Distributed under the terms of the BSD License.
+</font><font color="#008000">#
+</font><font color="#008000">#*****************************************************************************
+</font>
+<font color="#000000">__author__</font> <font color="#0000C0">=</font> <font color="#004080">'Fernando Perez &lt;Fernando.Perez@colorado.edu&gt;'</font>
+<font color="#000000">__url__</font> <font color="#0000C0">=</font>  <font color="#004080">'http://amath.colorado.edu/faculty/fperez/python/profiling'</font>
+<font color="#000000">__license__</font> <font color="#0000C0">=</font> <font color="#004080">'BSD'</font>
+
+<font color="#008000"># Tweak any constants you may want here
+</font>
+<font color="#008000"># Select the converter from hotshot format to callgrind format
+</font><font color="#000000">HOTSHOT2CG</font> <font color="#0000C0">=</font> <font color="#004080">'hotshot2calltree'</font>
+
+<font color="#008000">#HOTSHOT2CG = 'hotshot2cachegrind.py'
+</font>
+
+<font color="#008000">#############################################################################
+</font><font color="#008000"># No user-serviceable parts below.
+</font><font color="#008000">#############################################################################
+</font>
+<font color="#008000"># Stdlib imports
+</font><font color="#C00000">import</font> <font color="#000000">hotshot</font>
+<font color="#C00000">import</font> <font color="#000000">os</font>
+<font color="#C00000">import</font> <font color="#000000">sys</font>
+
+<font color="#008000"># Main code starts.  The run() routine is as simple as possible so that it
+</font><font color="#008000"># produces the least amount of extraneous information in the profile results.
+</font>
+<font color="#C00000">def</font> <font color="#000000">run</font><font color="#0000C0">(</font><font color="#000000">code</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#000000">loc</font> <font color="#0000C0">=</font> <font color="#000000">locals</font><font color="#0000C0">(</font><font color="#0000C0">)</font>
+    <font color="#000000">loc</font><font color="#0000C0">[</font><font color="#004080">'__name__'</font><font color="#0000C0">]</font> <font color="#0000C0">=</font> <font color="#004080">'__main__'</font>
+    <font color="#000000">loc</font><font color="#0000C0">[</font><font color="#004080">'__file__'</font><font color="#0000C0">]</font> <font color="#0000C0">=</font> <font color="#000000">sys</font><font color="#0000C0">.</font><font color="#000000">argv</font><font color="#0000C0">[</font><font color="#0080C0">0</font><font color="#0000C0">]</font>
+    <font color="#C00000">exec</font> <font color="#000000">code</font> <font color="#C00000">in</font> <font color="#000000">loc</font>
+
+<font color="#C00000">def</font> <font color="#000000">main</font><font color="#0000C0">(</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#008000"># Simple args processing
+</font>    <font color="#C00000">try</font><font color="#0000C0">:</font>
+        <font color="#000000">fname</font> <font color="#0000C0">=</font> <font color="#000000">sys</font><font color="#0000C0">.</font><font color="#000000">argv</font><font color="#0000C0">[</font><font color="#0080C0">1</font><font color="#0000C0">]</font>
+    <font color="#C00000">except</font> <font color="#000000">IndexError</font><font color="#0000C0">:</font>
+        <font color="#C00000">print</font> <font color="#000000">__doc__</font>
+        <font color="#000000">sys</font><font color="#0000C0">.</font><font color="#000000">exit</font><font color="#0000C0">(</font><font color="#0080C0">1</font><font color="#0000C0">)</font>
+
+    <font color="#008000"># Read and compile source
+</font>    <font color="#000000">f</font> <font color="#0000C0">=</font> <font color="#000000">file</font><font color="#0000C0">(</font><font color="#000000">fname</font><font color="#0000C0">,</font><font color="#004080">'r'</font><font color="#0000C0">)</font>
+    <font color="#000000">source</font> <font color="#0000C0">=</font> <font color="#000000">f</font><font color="#0000C0">.</font><font color="#000000">read</font><font color="#0000C0">(</font><font color="#0000C0">)</font>
+    <font color="#000000">f</font><font color="#0000C0">.</font><font color="#000000">close</font><font color="#0000C0">(</font><font color="#0000C0">)</font>
+
+    <font color="#008000"># Precompile the source so we don't see compilation times in the profile.
+</font>    <font color="#008000"># Let any generated exceptions propagate out.
+</font>    <font color="#000000">code</font> <font color="#0000C0">=</font> <font color="#000000">compile</font><font color="#0000C0">(</font><font color="#000000">source</font><font color="#0000C0">,</font><font color="#000000">fname</font><font color="#0000C0">,</font><font color="#004080">'exec'</font><font color="#0000C0">)</font>
+
+    <font color="#008000"># Build filenames for outputs
+</font>    <font color="#000000">base_fname</font> <font color="#0000C0">=</font> <font color="#000000">os</font><font color="#0000C0">.</font><font color="#000000">path</font><font color="#0000C0">.</font><font color="#000000">basename</font><font color="#0000C0">(</font><font color="#000000">fname</font><font color="#0000C0">)</font>
+    <font color="#000000">prof_fname</font> <font color="#0000C0">=</font> <font color="#000000">base_fname</font><font color="#0000C0">+</font><font color="#004080">'.prof'</font>
+    <font color="#000000">cgr_fname</font> <font color="#0000C0">=</font> <font color="#000000">base_fname</font><font color="#0000C0">+</font><font color="#004080">'.cgrind'</font>
+
+    <font color="#008000"># Build the profiler object
+</font>    <font color="#000000">prof</font> <font color="#0000C0">=</font> <font color="#000000">hotshot</font><font color="#0000C0">.</font><font color="#000000">Profile</font><font color="#0000C0">(</font><font color="#000000">prof_fname</font><font color="#0000C0">,</font> <font color="#000000">lineevents</font><font color="#0000C0">=</font><font color="#0080C0">1</font><font color="#0000C0">)</font>
+    <font color="#008000"># Modify sys.argv so the executed code sees it as if it were running
+</font>    <font color="#008000"># standalone
+</font>    <font color="#000000">sys</font><font color="#0000C0">.</font><font color="#000000">argv</font><font color="#0000C0">[</font><font color="#0000C0">:</font><font color="#0000C0">]</font> <font color="#0000C0">=</font> <font color="#000000">sys</font><font color="#0000C0">.</font><font color="#000000">argv</font><font color="#0000C0">[</font><font color="#0080C0">1</font><font color="#0000C0">:</font><font color="#0000C0">]</font>
+    <font color="#C00000">try</font><font color="#0000C0">:</font>
+        <font color="#000000">prof</font><font color="#0000C0">.</font><font color="#000000">runcall</font><font color="#0000C0">(</font><font color="#000000">run</font><font color="#0000C0">,</font><font color="#000000">code</font><font color="#0000C0">)</font>
+    <font color="#C00000">finally</font><font color="#0000C0">:</font>
+        <font color="#000000">prof</font><font color="#0000C0">.</font><font color="#000000">close</font><font color="#0000C0">(</font><font color="#0000C0">)</font>
+
+    <font color="#008000"># Post-process the hotshot output so it can be read by kcachegrind
+</font>    <font color="#000000">os</font><font color="#0000C0">.</font><font color="#000000">system</font><font color="#0000C0">(</font><font color="#004080">'%s -o %s %s'</font> <font color="#0000C0">%</font> <font color="#0000C0">(</font><font color="#000000">HOTSHOT2CG</font><font color="#0000C0">,</font><font color="#000000">cgr_fname</font><font color="#0000C0">,</font><font color="#000000">prof_fname</font><font color="#0000C0">)</font><font color="#0000C0">)</font>
+    <font color="#000000">os</font><font color="#0000C0">.</font><font color="#000000">system</font><font color="#0000C0">(</font><font color="#004080">'kcachegrind %s &amp;'</font> <font color="#0000C0">%</font> <font color="#000000">cgr_fname</font><font color="#0000C0">)</font>
+
+<font color="#C00000">if</font> <font color="#000000">__name__</font> <font color="#0000C0">==</font> <font color="#004080">'__main__'</font><font color="#0000C0">:</font>
+    <font color="#000000">main</font><font color="#0000C0">(</font><font color="#0000C0">)</font><font color="#000000"></font></font></pre>
+
+</BODY> </HTML>

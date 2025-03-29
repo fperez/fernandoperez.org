@@ -1,24 +1,32 @@
 ---
-title: Fernando Pérez - Welcome to my site
 site:
-  hide_outline: true
-  hide_toc: true
+  #hide_outline: true
+  #hide_toc: true
   hide_title_block: true
 ---
 
-+++ { "kind": "centered"}
-![](resources/top_mountains_clouds.jpg)
+::::{div}
+:class: banner-container
 
-+++ { "kind": "split-image" }
-## Fernando Pérez
-![](resources/fperez-headshot-sq-sm-2024.jpg)
+  :::{image} resources/top_mountains_clouds.jpg
+  :class: banner-image
+  :alt: Colorado mountains with clouds
+  :::
 
-+++ { "kind": "justified"}
+  :::{div}
+  :class: banner-text
 
-:::{warning} Restarting my website
+  Fernando Pérez
+  <span class="banner-subtext">
+  open science, open source, data & earth</span>
+  :::
 
-Under construction with MyST - technology from the future! ![](http://textfiles.com/underconstruction/AtAthensAcademy6735construction1.gif)
+::::
 
+
+:::{warning} Rebuilding with [MyST](https://mystmd) - technology from the future! 
+
+I am slowly rebuilding my website, as I lost my previous `fperez.org` domain. I will port some content, while the rest is available at the old site through [fperez.github.io/fperez.org](https://fperez.github.io/fperez.org).
 :::
 
 
@@ -31,22 +39,16 @@ My research interests were shaped by years of working on a number of applied pro
 I am convinced that we need better tools for scientific computing, and that our efforts to build them based on the [Python](http://www.python.org) language can make a significant difference to how research is conducted and disseminated. I created the [IPython](http://ipython.org) project while a graduate student in 2001, which has now evolved into the large and collaborative [Project Jupyter](), where a talented team does all the hard work. I am an active member of the community that creates freely available scientific computing tools around the [Scientific Python stack](http://scientific-python.org).
 
 
-:::{note} Contact
+:::{include} news.md
+:end-before: stop-recent-news
+:::
+
+:::{note} Photo note: the mountains
 :class: dropdown
 
-**Email:** `fernando.perez-AT-berkeley.edu`
+The picture at the top is Colorado's incredible Continental Divide, specifically the Indian Peaks range, shot from [Brainard Lake](http://maps.google.com/maps/place?cid=1317471477502605538&q=brainard+lake,+colorado&hl=en) during a [beautiful fall day in 2004](https://photos.app.goo.gl/a3T1FoFUuaskh41JA). On the descent from that hike I spotted a great-looking [little couloir](https://photos.app.goo.gl/NQQKFGVR3QklzPZ52) that provided for a very nice [alpine day](http://picasaweb.google.com/fdo.perez/CouloirLittlePawneePeak) one week later. Having that terrain 45 minutes from home is one thing (among many) that makes the Colorado Front Range the most amazing place to live I've known.
+:::
 
-Unfortunately I receive far more email than I can manage; I am perennially far behind. For urgent matters that absoultely require a reply, please cc [fperez.support](mailto:fperez.support@berkeley.edu), who will try to assist.
 
-**Office:** [Evans Hall 419](https://www.berkeley.edu/map/evans-hall)
-
-**Post**
-
-```
-Fernando Pérez
-Statistics Department
-367 Evans Hall
-University of California, Berkeley
-Berkeley, CA 94720-3860
-```
+:::{embed} #contact
 :::

@@ -1,0 +1,378 @@
+<HTML>
+<HEAD>
+<TITLE>B<lyxport> - Export a LyX or LaTeX file to HTML, PostScript and PDF.</TITLE>
+<LINK REV="made" HREF="mailto:fg@bi.mandrakesoft.com">
+</HEAD>
+
+<BODY>
+
+<A NAME="__index__"></A>
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#name">NAME</A></LI>
+	<LI><A HREF="#synopsis">SYNOPSIS</A></LI>
+	<LI><A HREF="#description">DESCRIPTION</A></LI>
+	<UL>
+
+		<LI><A HREF="#purpose">Purpose</A></LI>
+		<LI><A HREF="#command line use">Command line use</A></LI>
+		<LI><A HREF="#if you don't have lyx">If you don't have LyX</A></LI>
+	</UL>
+
+	<LI><A HREF="#options and arguments">OPTIONS AND ARGUMENTS</A></LI>
+	<LI><A HREF="#integration with lyx">INTEGRATION WITH LyX</A></LI>
+	<LI><A HREF="#pdf generation">PDF GENERATION</A></LI>
+	<UL>
+
+		<LI><A HREF="#fonts">Fonts</A></LI>
+		<LI><A HREF="#figures">Figures</A></LI>
+		<LI><A HREF="#links">Links</A></LI>
+	</UL>
+
+	<LI><A HREF="#requires">REQUIRES</A></LI>
+	<UL>
+
+		<LI><A HREF="#portability">Portability</A></LI>
+	</UL>
+
+	<LI><A HREF="#to do">TO DO</A></LI>
+	<LI><A HREF="#version">VERSION</A></LI>
+	<LI><A HREF="#author">AUTHOR</A></LI>
+	<LI><A HREF="#acknowledgements">ACKNOWLEDGEMENTS</A></LI>
+	<LI><A HREF="#copyright and disclaimer">COPYRIGHT AND DISCLAIMER</A></LI>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<HR>
+<H1><A NAME="name">NAME</A></H1>
+<P><STRONG>lyxport</STRONG> - Export a LyX or LaTeX file to HTML, PostScript and PDF.</P>
+<P>
+<HR>
+<H1><A NAME="synopsis">SYNOPSIS</A></H1>
+<P><STRONG>lyxport</STRONG> [options] <EM>file</EM></P>
+<P>Perl script which takes a LyX or LaTeX file as its only argument and produces
+HTML, PostScript and PDF versions of the document. The name is short for ``lyx
+export''.</P>
+<P>You can call <STRONG>lyxport</STRONG> with a filename with or without extension: <EM>file</EM>,
+<EM>file.lyx</EM> and <EM>file.tex</EM> will all work. <STRONG>lyxport</STRONG> will update the LaTeX
+file if there is a corresponding LyX file with a newer timestamp.</P>
+<P>Use <STRONG>lyxport --help</STRONG> for more information, and <STRONG>lyxport --man</STRONG> for a full
+man page.</P>
+<P>
+<HR>
+<H1><A NAME="description">DESCRIPTION</A></H1>
+<P>
+<H2><A NAME="purpose">Purpose</A></H2>
+<P>LyX ( <A HREF="http://www.lyx.org">http://www.lyx.org</A> ) is a wonderful document processor, which can produce
+from a single source multiple versions for different purposes: a PostScript
+file for printing on a Unix-type system, a PDF file for distribution across
+multiple operating systems, or an HTML file for Internet display. It
+accomplishes this by exporting its own file format to a LaTeX file and then
+running various converters on this resulting file.</P>
+<P>However, it turns out that this process isn't exactly foolproof, as these
+converters have all sorts of little quirks which can produce anything from
+surprises in the way the final result looks like to outright failure of the
+export process. The purpose of <STRONG>lyxport</STRONG> is to serve as a ``smart wrapper''
+around those export facilities which LyX normally uses, trying to massage the
+LaTeX file that everything starts from in the hopes of having better success
+in producing HTML and PDF (PostScript usually poses no problems).</P>
+<P><STRONG>lyxport</STRONG> also allows you to keep around only the LyX file, and possibly any
+ancillary figure files. <STRONG>lyxport</STRONG> takes care of generating (and removing
+afterwards if instructed to do so) any intermediate files necessary for the
+export process.</P>
+<P>For example, in order to make PDF from a LaTeX file, any included eps figures
+need to be converted to pdf format. But LyX likes to have the figures in eps
+format for on-screen display, which is a great feature to have. <STRONG>lyxport</STRONG>
+allows you to keep your LyX file as usual (with references to .eps figures)
+and will make .pdf versions of any included figure on the fly as needed. You
+can even ask it to remove those pdf files after it finishes, if you really
+want to maintain a minimum of files around (though it will have to remake them
+again if you ever need to update your pdf exported document).</P>
+<P>
+<H2><A NAME="command line use">Command line use</A></H2>
+<P>If you simply type <STRONG>lyxport</STRONG> <EM>file</EM>, it will try to make PostScript, HTML,
+and PDF versions of your file, putting them all in a single directory named
+<EM>file</EM> (without a .lyx or .tex extension if your file had one). But it has
+<A HREF="#options and arguments">command line options</A> for making only the
+formats you want, and fairly detailed control over its behavior.</P>
+<P>
+<H2><A NAME="if you don't have lyx">If you don't have LyX</A></H2>
+<P>Despite its name, if you are a regular LaTeX user and don't even have LyX
+installed in your system, <STRONG>lyxport</STRONG> can still be useful to you. In fact,
+<STRONG>lyxport</STRONG> only uses LyX once in each run: if there is no <EM>file.tex</EM> or if
+<EM>file.lyx</EM> file is newer than <EM>file.tex</EM>, <STRONG>lyxport</STRONG> updates <EM>file.tex</EM>
+from <EM>file.lyx</EM>. But if there is no <EM>file.lyx</EM> at all it will simply use
+<EM>file.tex</EM> and proceed with all its functionality intact.</P>
+<P>
+<HR>
+<H1><A NAME="options and arguments">OPTIONS AND ARGUMENTS</A></H1>
+<P>Single letter options (preceded by a single dash <STRONG>-</STRONG>) can be bundled: <STRONG>-pf</STRONG>
+is equivalent to <STRONG>-p -f</STRONG>. Long options (preceded by two dashes <STRONG>--</STRONG>) can be
+abbreviated to as few letters as needed to clear ambiguity.</P>
+<DL>
+<DT><STRONG><A NAME="item_%2Dr_%2D%2Druns_NUM"><STRONG>-r --runs</STRONG> <EM>NUM</EM></A></STRONG><BR>
+<DD>
+Set number of latex runs by hand (otherwise auto-determined).
+<P></P>
+<DT><STRONG><A NAME="item_%2Do_%2D%2Dopts_l2h_%27string%27"><STRONG>-o --opts_l2h</STRONG> <EM>'string'</EM></A></STRONG><BR>
+<DD>
+String with options to be passed to <STRONG>latex2html</STRONG>. This string should be
+protected by single quotes to allow double quotes inside of it.
+<P>For example, if you want to pass to <STRONG>latex2html</STRONG> the option <STRONG>-info ``my
+info''</STRONG> you can do so with <STRONG>lyxport -o ' -info ``my info'' '</STRONG> (the extra spaces
+around the quote marks are not needed, they are here only for the sake of
+clarity).</P>
+<P><STRONG>latex2html</STRONG> has <EM>many</EM> command-line options. For a project you are working
+constantly on, it may be more convenient to permanently set some of those
+options via a file called <EM>.latex2html-init</EM> which <STRONG>latex2html</STRONG> always
+reads at startup. See the <STRONG>latex2html</STRONG> man page or the excellent online
+documentation kept at <A HREF="http://www-texdev.mpce.mq.edu.au/l2h/docs/manual">http://www-texdev.mpce.mq.edu.au/l2h/docs/manual</A> for
+full details.</P>
+<P></P>
+<DT><STRONG><A NAME="item_%2Dh_%2D%2Dhtml"><STRONG>-h --html</STRONG></A></STRONG><BR>
+<DD>
+Export to HTML.
+<P></P>
+<DT><STRONG><A NAME="item_%2Dp_%2D%2Dps"><STRONG>-p --ps</STRONG></A></STRONG><BR>
+<DD>
+Export to PostScript.
+<P></P>
+<DT><STRONG><A NAME="item_%2Df_%2D%2Dpdf"><STRONG>-f --pdf</STRONG></A></STRONG><BR>
+<DD>
+Export to PDF. See below the section <A HREF="#pdf generation">PDF GENERATION</A> for details on how to
+obtain nice-looking PDF from your LaTeX sources.
+<P>If none of the three above options is specified, the default behavior is to
+export <EM>all</EM> three formats. If any is given, then only those formats
+explicitly specified will be produced (e.g. <STRONG>-h -f</STRONG> makes HTML and PDF only,
+but not PostScript).</P>
+<P></P>
+<DT><STRONG><A NAME="item_%2Dc_%2D%2Dclean"><STRONG>-c --clean</STRONG></A></STRONG><BR>
+<DD>
+Do a clean start export, removing first any html directory, .aux, .log
+and .toc files which may have been left from previous runs.
+<P></P>
+<DT><STRONG><A NAME="item_%2Dt_%2D%2Dtidy"><STRONG>-t --tidy</STRONG></A></STRONG><BR>
+<DD>
+<STRONG>lyxport</STRONG> will tidy up <EM>after</EM> itself, removing .aux, .log and .toc files left
+in the current directory. Use this only for ``final'' publication of documents, as
+those files are otherwise useful to shorten the time of runs.
+<P>This option is incremental: you can call it twice (you can bundle it as
+<STRONG>-tt</STRONG>). If called twice, <STRONG>lyxport</STRONG> will remove also the LaTeX file
+associated with your LyX file, but <EM>only if</EM> <STRONG>lyxport</STRONG> <EM>itself created it
+in the same run</EM>. This behavior is meant to be a safety net, so that
+<STRONG>lyxport</STRONG> doesn't accidentally remove LaTeX files which you may have manually
+modified in some way.</P>
+<P>So if this option is called twice, you can start with a LyX file named <EM>file.lyx</EM>
+and end up only with your original file plus a single directory named <EM>file</EM> which 
+will contain <EM>file.html</EM>, <EM>file.ps</EM> and <EM>file.pdf</EM> (plus some ancillary stuff for
+the html version). This mode of operation is obviously provided for the neatness
+freaks amongst us.</P>
+<P></P>
+<DT><STRONG><A NAME="item_%2Dd_%2D%2Ddebug"><STRONG>-d --debug</STRONG></A></STRONG><BR>
+<DD>
+Debugging mode: <STRONG>lyxport</STRONG> will leave <EM>all</EM> temporary files it creates lying
+around. If a particular target refuses to build, you can then try to run the
+respective commands on the temporary files manually, and possibly diagnose the
+source of the problem.
+<P>This option will override any calls made to option <STRONG>--tidy</STRONG>.</P>
+<P></P>
+<DT><STRONG><A NAME="item_%2Dl_%2D%2Dcld"><STRONG>-l --cld</STRONG></A></STRONG><BR>
+<DD>
+Special command-line debugging mode: only prints (in a rather primitive form)
+the names and values of all command-line options which were set. Useful for
+finding problems with complicated option strings being passed to
+<STRONG>latex2html</STRONG>.
+<P></P>
+<DT><STRONG><A NAME="item_%2D%2Dhelp"><STRONG>--help</STRONG></A></STRONG><BR>
+<DD>
+Print this help and quit.
+<P></P>
+<DT><STRONG><A NAME="item_%2Dm_%2D%2Dman"><STRONG>-m --man</STRONG></A></STRONG><BR>
+<DD>
+Print a complete man page. <STRONG>lyxport</STRONG> is documented using embedded pod
+strings, so you can see its full documentation using the command <STRONG>perldoc
+lyxport</STRONG>.
+<P>You can also convert this documentation to other formats using the
+<EM>pod2_anything</EM> family of converters (<EM>pod2html</EM>, <EM>pod2latex</EM>, <EM>pod2man</EM>
+and <EM>pod2text</EM>). See their respective man pages for details.</P>
+<P>Note that if you installed <STRONG>lyxport</STRONG> properly, you should already have a man
+page available, plus html and plain text versions of the documents. These are
+by default installed to a directory named <EM>/usr/local/doc/lyxport-XXX</EM>, where
+<EM>XXX</EM> is the version number. At installation time, you may manually change
+the <EM>/usr/local</EM> prefix. Consult your local documents or ask your system
+administrator for details on the specifics of your configuration.</P>
+<P></P>
+<DT><STRONG><A NAME="item_%2Dv_%2D%2Dversion"><STRONG>-v --version</STRONG></A></STRONG><BR>
+<DD>
+Print version information and quit.
+<P></P>
+<DT><STRONG><A NAME="item_filename"><STRONG>filename</STRONG></A></STRONG><BR>
+<DD>
+The given filename may have a .lyx or .tex extension (or none at
+all). <EM>lyxport</EM> will update the tex file from the lyx file if necessary.
+<P><STRONG>lyxport</STRONG> accepts only <EM>one</EM> filename at a time.</P>
+<P></P></DL>
+<P>
+<HR>
+<H1><A NAME="integration with lyx">INTEGRATION WITH LyX</A></H1>
+<P>If you find that <STRONG>lyxport</STRONG> is more succesful in exporting your files than
+LyX's default calls to <STRONG>latex2html</STRONG> and <STRONG>pdflatex</STRONG>, you can modify LyX to
+use <STRONG>lyxport</STRONG> as its conversion routine. For LyX versions 1.1.6 and above, go
+to <CODE>Edit-&gt;Preferences-&gt;Converters-&gt;Converters</CODE> and specify <STRONG>lyxport</STRONG> as your
+converter for <CODE>LaTeX-&gt;HTML</CODE> and <CODE>LaTeX-&gt;PDF</CODE>. LyX's convention
+is to call <STRONG>$$i</STRONG> the current file.</P>
+<P>For example, if you want to setup <STRONG>lyxport</STRONG> to be your PDF export filter
+under LyX, in the <CODE>Converters</CODE> dialog, in the <CODE>LaTeX-&gt;PDF(pdflatex)</CODE>
+option, set:</P>
+<PRE>
+    lyxport --pdf $$i</PRE>
+<P>This way you'll be able to export to pdf directly from within LyX, even if
+your figures are in eps format.</P>
+<P>LyX's <CODE>Converters</CODE> dialog is a bit confusing: after making changes, you must
+first press the <CODE>Modify</CODE> button for your changes to actually be recorded, and
+then <CODE>Save</CODE>.</P>
+<P>You can similarly set up <STRONG>lyxport</STRONG> to be your LaTeX to HTML converter.</P>
+<P>For LyX versions earlier than 1.1.6 (which didn't have the new Preferences
+dialog) these same options can be configured via your LyX defaults file. See
+the LyX documentation for details.</P>
+<P>
+<HR>
+<H1><A NAME="pdf generation">PDF GENERATION</A></H1>
+<P>
+<H2><A NAME="fonts">Fonts</A></H2>
+<P>Normally PDF documents made on Unix-type systems from LaTeX sources produce
+horrible looking fonts when viewed with Adobe's own Acrobat Reader. I don't
+know the many intricacies of the problem (you can search for the details on
+your own). I'll simply list here the trick that has helped <EM>me</EM> solve the
+font problem. Try it, your mileage may vary.</P>
+<OL>
+<LI>
+In your home directory, make (or modify it if it already exists) a file named <EM>.dvipsrc</EM> which must contain the lines:
+<PRE>
+    p+ psfonts.cmz
+    p+ psfonts.amz</PRE>
+<P></P>
+<LI>
+Make sure that the LaTeX preamble of your LyX file (or the part before <CODE>\begin{document}</CODE> if you are using straight LaTeX files) contains:
+<PRE>
+    \usepackage[T1]{fontenc}
+    \usepackage{ae,aecompl}</PRE>
+<P>This will guarantee that T1 encoded fonts come out looking good in the final PDF.</P>
+<P></P></OL>
+<P>
+<H2><A NAME="figures">Figures</A></H2>
+<P><STRONG>pdflatex</STRONG> (if I understand correctly) only accepts filenames with a single
+<STRONG>.</STRONG> in them, and only uses graphic files with extensions pdf, png, jpg and
+tif (all lowercase). <STRONG>lyxport</STRONG> will do its best to analyze your latex file
+and try to change references to figures to accommodate <STRONG>pdflatex</STRONG>, by
+creating temporary copies of your image files if necessary.</P>
+<P>Ideally, you should be able to have for example a figure called <EM>fig.1.JPG</EM>
+along with a <EM>fig.1.eps</EM> (for <STRONG>lyx</STRONG> to preview it), and <STRONG>lyxport</STRONG> would
+export a pdf document without leaving any more files after itself, even though
+it temporarily had to create <EM>fig_1.jpg</EM> to make <STRONG>pdflatex</STRONG> happy. As I
+said, ideally... If things don't quite work, try the <STRONG>--debug</STRONG> option. If you
+find a fix for the problem, mail it to me: <A HREF="mailto:fperez@pizero.colorado.edu">fperez@pizero.colorado.edu</A></P>
+<P>
+<H2><A NAME="links">Links</A></H2>
+<P>In order for URLs and similar elements to produce proper active links in the
+PDF document, you need to include in your LaTeX preamble the line</P>
+<PRE>
+    \usepackage{hyperref}</PRE>
+<P>
+<HR>
+<H1><A NAME="requires">REQUIRES</A></H1>
+<P><STRONG>lyxport</STRONG> relies on some programs listed below, for the reasons indicated:</P>
+<DL>
+<DT><STRONG><A NAME="item_lyx"><STRONG>lyx</STRONG></A></STRONG><BR>
+<DD>
+To make LaTeX files from LyX files. Tested with lyx version 1.1.6fix1, should work with earlier versions (perhaps with minor changes to the way LyX is called).
+<P></P>
+<DT><STRONG><A NAME="item_latex"><STRONG>latex</STRONG></A></STRONG><BR>
+<DD>
+To produce PostScript and for latex2html to work properly (cross-references).
+<P></P>
+<DT><STRONG><A NAME="item_dvips"><STRONG>dvips</STRONG></A></STRONG><BR>
+<DD>
+For making PostScript output.
+<P></P>
+<DT><STRONG><A NAME="item_latex2html"><STRONG>latex2html</STRONG></A></STRONG><BR>
+<DD>
+For generating HTML from latex sources.
+<P></P>
+<DT><STRONG><A NAME="item_pdflatex"><STRONG>pdflatex</STRONG></A></STRONG><BR>
+<DD>
+For making PDF output from a latex file with proper cross-referencing and
+internal document links.
+<P></P>
+<DT><STRONG><A NAME="item_epstopdf"><STRONG>epstopdf</STRONG></A></STRONG><BR>
+<DD>
+A Perl script to automatically generate pdf versions of eps figures included
+in lyx files. It is more robust in its handling of various eps quirks than a
+straight call to <STRONG>ps2pdf</STRONG>.
+<P></P>
+<DT><STRONG><A NAME="item_perl"><STRONG>perl</STRONG></A></STRONG><BR>
+<DD>
+Well, it's a Perl script after all, isn't it?
+<P></P></DL>
+<P>However, partial use of <STRONG>lyxport</STRONG> is still possible without some of these
+components. If for example you don't have <STRONG>latex2html</STRONG> in your system, you
+can still use <STRONG>lyxport</STRONG> to produce PostScript and PDF. Various combinations
+are possible.</P>
+<P>
+<H2><A NAME="portability">Portability</A></H2>
+<P>There are calls in <STRONG>lyxport</STRONG> to some Unix commands like <STRONG>rm -rf</STRONG>. For this
+reason it is not totally portable. These calls are however reasonably few and
+could be eliminated if there is enough demand by replacing them with
+equivalent Perl code. It's just more work...</P>
+<P>
+<HR>
+<H1><A NAME="to do">TO DO</A></H1>
+<UL>
+<LI>
+Build rpm for more convenient installation.
+<P></P>
+<LI>
+Clean up the <CODE>improve_tex4html()</CODE> code for readability.
+<P></P></UL>
+<P>
+<HR>
+<H1><A NAME="version">VERSION</A></H1>
+<P>This is <STRONG>lyxport</STRONG> version 0.3</P>
+<P>
+<HR>
+<H1><A NAME="author">AUTHOR</A></H1>
+<P>Fernando Pérez &lt;<A HREF="mailto:fperez@pizero.colorado.edu">fperez@pizero.colorado.edu</A>&gt;.</P>
+<P>Please email me with comments, suggestions, bugfixes, etc.</P>
+<P>The most current version of <STRONG>lyxport</STRONG> should always be available at <A HREF="http://www-hep.colorado.edu/~fperez/lyxport">http://www-hep.colorado.edu/~fperez/lyxport</A></P>
+<P>
+<HR>
+<H1><A NAME="acknowledgements">ACKNOWLEDGEMENTS</A></H1>
+<P>Inspired on the <STRONG>lyx2html</STRONG> script by Steffen Evers
+&lt;<A HREF="mailto:tron@cs.tu-berlin.de">tron@cs.tu-berlin.de</A>&gt;.  Some of the code is a blatant ripoff of
+Steffen's code, using <STRONG>s2p</STRONG> to get Perl versions of his original <STRONG>sed</STRONG>
+scripts.</P>
+<P>
+<HR>
+<H1><A NAME="copyright and disclaimer">COPYRIGHT AND DISCLAIMER</A></H1>
+<P>This program is Copyright 2001 by Fernando Pérez.</P>
+<P>This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.</P>
+<P>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</P>
+<P>If you do not have a copy of the GNU General Public License write to
+the Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
+MA 02139, USA.</P>
+<P>If the author of this software was too lazy to include the full GPL text along
+with the code, you can find it at: <A HREF="http://www.gnu.org/copyleft/gpl.html">http://www.gnu.org/copyleft/gpl.html</A></P>
+
+</BODY>
+
+</HTML>

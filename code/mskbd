@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+"""Control special keys of MS wireless multimedia keyboard.
+
+Set for my home and office keyboards.  For some reason, though physically
+identical, they generate different keycodes for some of their special keys
+(and the office one seems to have 5 of them dead)."""
+
+import sys
+from x11kbd import X11Keyboard, MSWirelessKbdActions
+
+def main():
+    if len(sys.argv)!=2 or sys.argv[1] not in ['home','office']:
+        print 'Please specify mode [home/office].'
+        sys.exit(1)
+        
+    # My default set of actions
+    actions = MSWirelessKbdActions('Pcm  ')
+    if sys.argv[1] == 'home':
+        keycodes = HomeKbd()
+    else:
+        keycodes = OfficeKbd()
+    print 'Press Ctrl-C to stop.'
+    X11Keyboard(keycodes,actions).control()
+    print 'Bye!'
+
+def HomeKbd():
+    # Get a set of default actions to initialize the keyboard
+    return dict(# Left tools
+                MyDocuments = 228,
+                MyPictures  = 231,
+                MyMusic     = 237,
+                # Media oval
+                Mute        = 166,
+                PlayPause   = 159,
+                Stop        = 151,
+                VolumePlus  = 158,
+                VolumeMinus = 165,
+                Previous    = 164,
+                Next        = 162,
+                Media       = 129,
+                # Right tools
+                Mail        = 236,
+                WebHome     = 130,
+                Messenger   = 218,
+                # Numpad tools
+                Calculator  = 161,
+                LogOff      = 214,
+                Sleep       = 223,
+                )
+
+def OfficeKbd():
+    """On my office keyboard, a few keys do not generate ANY X11 events at all
+    (MyDocuments, MyPictures, MyMusic, Messenger and LogOff)."""
+
+    return dict(# Media oval
+                Mute        = 160,
+                PlayPause   = 162,
+                Stop        = 164,
+                VolumePlus  = 176,
+                VolumeMinus = 174,
+                Previous    = 144,
+                Next        = 153,
+                Media       = 129,
+                # Right tools
+                Mail        = 236,
+                WebHome     = 130,
+                # Numpad tools
+                Calculator  = 161,
+                Sleep       = 223,
+                )
+
+# Run main
+main()

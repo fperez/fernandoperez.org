@@ -1,0 +1,471 @@
+#!/usr/bin/env perl
+#
+#*****************************************************************************
+#
+#   lyxpub - script for converting lyx docs to HTML, PostScript and PDF
+#
+#   Inspired on the lyx2html script by Steffen Evers (tron@cs.tu-berlin.de)
+#   (many thanks to him).
+#
+#      Copyright (C) 2001  Fernando Pérez (fperez@pizero.colorado.edu)
+#
+#*****************************************************************************
+#
+#      This program is free software; you can redistribute it and/or modify
+#      it under the terms of the GNU General Public License as published by
+#      the Free Software Foundation; either version 2 of the License, or
+#      (at your option) any later version.
+#
+#      This program is distributed in the hope that it will be useful,
+#      but WITHOUT ANY WARRANTY; without even the implied warranty of
+#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#      GNU General Public License for more details.
+#
+#      You should have received a copy of the GNU General Public License
+#      along with this program; if not, write to the Free Software
+#      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#
+#      If the author of this software was too lazy to include the GPL 
+#      along with the code, you can find its full text at:
+#
+#                 http://www.gnu.org/copyleft/gpl.html
+#
+#*****************************************************************************
+
+my $usage='
+Usage: 
+  lyxpub [options] file
+
+Script to "publish" HTML, PostScript and PDF documents out of a 
+LyX or LaTeX file. The given filename may have a .lyx or .tex 
+extension (or none at all).
+
+Options:
+  -r NUM: set # of latex runs by hand (otherwise auto-determined)
+  -o \'string\': string with options to be passed to latex2html
+               this string should be protected by single quotes to allow
+               double quotes inside of it.
+  -h: print this help.
+  -v: print version info and quit.
+
+Use the command "perldoc lyxpub" to see the complete documentation.
+
+';
+
+my $version = 0.1.1; # update this below  when it changes!
+
+=head1 NAME
+
+lyxpub (v. 0.1.1)
+
+=head1 DESCRIPTION
+
+A simple Perl script which takes a LyX or TeX file as its only argument (with or
+without extension) and produces HTML, PostScript and PDF versions of
+the document. The name is short for "lyx publish".
+
+=cut
+
+#*****************************************************************************
+# modify here the command names to suit your local conditions
+my %cmd= (
+	  lyx => "/usr/local/lyx/bin/lyx-mdk",
+	  latex => "latex",
+	  latex2html => "latex2html",
+	  dvips => "dvips",
+	  pdflatex => "pdflatex",
+	 );
+
+#************ DO NOT CHANGE ANYTHING BELOW THIS ULESS YOU *REALLY* KNOW
+#************ WHAT YOU ARE DOING.
+
+#*****************************************************************************
+# modules
+use strict;
+use Getopt::Std;
+use File::Copy;
+use File::Basename;
+
+#*****************************************************************************
+# "main" (simple minded way to keep variable scoping under control)
+main();
+
+sub main{
+    my (%option);
+    my (@exts,$lyx,$tex,$aux,$dvi,  # various filenames (with extensions)
+	$log,$ps,$pdf,$out);
+    my ($runs,			# number of latex runs
+	$file_in,		# input filename as given at cmd line
+	$file_base,		# base (no extension) name of file to work on
+	$lyx_time,		# timestamps of lyx/tex files
+	$tex_time,
+	$latex2html_opts,
+	$l2h_file               # tex file cleaned up for latex2html
+       );
+
+    #-------------------------------------------------------------------------
+    # process command-line
+    # dash options first
+    getopts("vhr:o:",\%option);
+    if ($option{v}) { die "\nlyxpub: version $version\n\n" }
+    $runs=$option{r} || 1;
+    $latex2html_opts=$option{o};
+    # then positional parameters
+    ($file_in)=@ARGV;
+    if ($option{h} or not defined($file_in)) { die $usage }
+    
+    #------------------------------------------------------------------------
+    # "real code" begins
+    
+    set_cmd_defaults(\%cmd);
+
+    # set filenames needed throughout
+    $file_base=check_file_exists($file_in);
+    @exts=qw(lyx tex aux dvi log ps pdf out);
+    ($lyx,$tex,$aux,$dvi,$log,$ps,$pdf,$out)= map { "$file_base.$_" } @exts;
+
+    # if tex file is older than lyx file, update
+    update_tex($lyx,$tex);
+    
+    # run latex to make dvi and ps
+    $runs=run_latex($file_base,$runs);
+    safe_system("$cmd{dvips} $dvi -o $ps");
+
+    # make html from original tex file
+    run_latex2html($tex,$latex2html_opts);
+
+    # Now make the pdf directly from the latex file
+    run_pdflatex($tex,$pdf);
+
+    # put pdf and postscript in final html directory
+    safe_system("mv $ps $pdf $file_base");
+
+    #cleanup before exiting
+    unlink ($dvi,$log,$out);
+    print "**************************************************\n";
+    print "All done. PS, PDF and HTML all placed in directory <$file_base>\n\n";
+    exit;
+} # end of main()
+
+#*****************************************************************************
+# subroutines
+
+#-----------------------------------------------------------------------------
+# execute a system call but die with some info if return value is non-zero
+sub safe_system {
+    my $error;
+
+    $error=system(@_)/256;
+    if ($error) {
+	die "\nERROR: Command\n   @_\nfailed.\nAborting...\n\n";
+    }
+} # end of safe_system()
+
+#-----------------------------------------------------------------------------
+# check that the command names specified at the top exist in the system, 
+# otherwise choose bare defaults and hope for the best.
+sub set_cmd_defaults {
+    my ($cmd)=@_;
+    my ($prog,$cmd_name);
+
+    while (($prog,$cmd_name)=each(%cmd)) {
+	print "Checking $prog,$cmd_name\n";
+	if (system("which $cmd_name")/256) { $$cmd{$prog}=$prog }
+    }
+} # end of set_cmd_defaults()
+
+#-----------------------------------------------------------------------------
+# make sure there's either a .lyx or a .tex file to work with
+# returns a stripped name (without .lyx or .tex extension) of the file
+sub check_file_exists {
+    my($file_in)=@_;
+    my($base_file);
+
+    $_=$file_in;
+    if    (/\.lyx$/) { s/\.lyx$// }
+    elsif (/\.tex$/) { s/\.tex$// }
+    $base_file=$_;
+    unless (-e "${base_file}.lyx" or -e "${base_file}.tex") {
+	die "I can't find a LyX or LaTeX file to work with!\nAborting...\n\n";
+    }
+    return $base_file;
+} # end of check_file_exists()
+
+#-----------------------------------------------------------------------------
+# make sure that the tex file is up to date vs the lyx original before starting
+sub update_tex {
+    my($lyx,$tex)=@_;
+    my($lyx_time,$tex_time);
+
+    unless (-e $lyx) {
+	print "LyX file not found. Working off the LaTeX file alone.\n\n";
+	return;
+    }
+    $lyx_time=(stat($lyx))[9];
+    $tex_time=(stat($tex))[9];
+    if ($lyx_time>$tex_time or not(-e $tex)) { 
+	print "Note: LaTeX file outdated or not existent, regenerating it...\n";
+	unlink $tex;
+	safe_system("$cmd{lyx} --export latex $lyx");
+	unless (-e $tex) {die "Aborting: couldn't create LaTeX file with LyX.\n\n"};
+	print "Done with LaTeX generation. Moving on.\n";
+    }
+} # end of update_tex()
+
+#-----------------------------------------------------------------------------
+# cleanup the tex code so that latex2html doesn't get too confused
+# this is essentially a Perl version (made with s2p) of Steffan Effer's
+# original improvetex sed script, part of his lyx2html script collection
+sub improve_tex {
+    my ($texfile)=@_;
+    my $printit=1;
+    my ($newfile,$len1,$tflag,$pflag);
+    local *OLD,*NEW;
+
+    $newfile="${texfile}_2html";
+    open(OLD,"< $texfile") || die "Can't read from LaTeX file $texfile: $!\n";
+    open(NEW,"> $newfile") || die "Can't write to file $newfile: $!\n";
+    select(NEW) || die "Can't make $newfile default filehandle: $!\n";
+
+# code generated by s2p follows. Emacs can't reindent it properly!
+# this code is ugly (once in Perl, original sed was ok). Clean it up...
+$pflag=$\;
+$\="\n";
+LINE:
+while (<OLD>) {
+    chomp;
+    # remove pagerefs over two lines (senseless in HTML)
+    if (/on *$\|on *page *$/) {
+	$_ .= "\n";
+	$len1 = length;
+	$_ .= <OLD>;
+	chop if $len1 < length;
+	$tflag = 0;
+	s/on *\n*page *\n*\\pageref{[^}]*}/\n/g;
+    }
+    # remove regular pagerefs (senseless in HTML)
+    s/on *page *\\pageref{[^}]*}//g;
+    # comment out redefintion of url tag (confuses latex2html)
+    if (/^\\IfFileExists{url.sty}/) {
+	s/^/%/;
+	print;
+	$_ = <OLD>;
+	s/^/%/;
+    }
+    # replace illegal characters from label tags
+    if (/\\label{[^}]*[ :][^}]*}/) {
+      Correctl:
+	s/(\\label{[^}]*)[ :]([^}]*})/$1_$2/ && $tflag++;
+	if ($tflag) { $tflag = 0; goto Correctl; }
+    }
+    # replace illegal characters from reference tags
+    if (/\\ref{[^}]*[ :][^}]*}/) {
+      Correctr:
+	s/(\\ref{[^}]*)[ :]([^}]*})/$1_$2/ && $tflag++;
+	if ($tflag) { $tflag = 0; goto Correctr; }
+    }
+    # remove empty pages
+    if (/^\\thispagestyle{empty}~\\newpage$/) {
+        $printit = 0;
+        next LINE;
+    }
+    if (/^\\thispagestyle{empty}~$/) {
+        $printit = 0;
+        next LINE;
+    }
+    # remove custom latex commands for fancyheaders
+    s/\\fancyhead[^{]*{[^{}]*([^{}]*{[^{}]*})*[^{}]*}*//g;
+    s/\\thispagestyle{[^{}]*}//g;
+    # change documentclass from scrbook to book
+    s/^(\\documentclass[^{}]*{)scrbook}/$1book}/;
+    # comment out unsupported packages
+    s/^(\\usepackage\[T1\]{fontenc})/%$1/;
+    s/^(\\usepackage{a4wide})/%$1/;
+    s/^(\\usepackage{fancyhdr})/%$1/;
+    s/^(\\usepackage{ae)/%$1/;
+    s/^(\\pagestyle{fancy})/%$1/;
+    # the geometry package doesn't make sense in html
+    s/^(\\usepackage{geometry})/%$1/;
+    s/^(\\geometry)/%$1/;
+
+    # comment out ident/skip block command (produces error message; why?)
+    s/^(\\setlength\\parskip{.*})/%$1/;
+    s/^(\\setlength\\parindent{.*})/%$1/;
+    # comment out special LyX-Latex code and custom Latex-preamble
+    # (confuses latex2html)
+    if (/%%+ LyX specific LaTeX commands./.../\\makeatother/) {
+	next LINE if /\\makeatother/;
+	s/^/%/;
+    }
+} continue {
+    if ($printit) { print }
+    else { $printit++ }
+}
+close(OLD);
+close(NEW);
+select(STDOUT);
+$\=$pflag;
+return $newfile;
+}  # end of improve_tex()
+
+#-----------------------------------------------------------------------------
+# run latex on a file as many times as needed
+# if the given # of runs is > 1, they are done; otherwise latex is run 
+# as many times as needed until cross-references work.
+sub run_latex {
+    my($file,$runs)=@_;
+    my($run_count)=(1);
+    my($latex_output);
+
+    # pre-determined # of runs
+    if ($runs > 1) {
+	$run_count=$runs;
+	foreach (1..$runs) {
+	    system "$cmd{latex} $file";
+	}
+    }
+    # make as many runs as needed to get cross-references right
+    else {
+	while (1) {
+	    $latex_output=`$cmd{latex} $file`;
+	    unless ($latex_output =~ /Rerun to get cross-references right/) {
+		last;
+	    }
+	    $run_count++;
+	}
+    }
+    return $run_count;
+} # end of run_latex()
+
+#-----------------------------------------------------------------------------
+sub run_latex2html {
+    my ($tex,$latex2html_opts)=@_;
+    my ($l2h_file,$symlink_exists,$htmldir);
+
+    ($htmldir=$tex) =~ s/\.tex$//;
+    $l2h_file=improve_tex($tex);
+    safe_system("$cmd{latex2html} $latex2html_opts $l2h_file");
+    unlink($l2h_file,"$htmldir/labels.pl");
+
+    # latex2html always leaves 2 copies of the file (one as file.html, one as 
+    # index.html). In systems that support symlinks, remove one and replace it 
+    # with a link:
+    $symlink_exists = eval { symlink("",""); 1 };
+    if ($symlink_exists) {
+	unlink("$htmldir/index.html");
+	symlink("$htmldir.html","$htmldir/index.html");
+    }
+} # end of run_latex2html()
+
+#-----------------------------------------------------------------------------
+# Make the pdf directly from the latex file
+# Notes: for this to work ok, the following must have been done:
+# 1. ~/.dvipsrc file must contain the lines
+#    p+ psfonts.cmz
+#    p+ psfonts.amz
+# 2. The latex preamble of the lyx file must have
+#    \usepackage{ae,aecompl}
+# This is so that T1 encoded fonts come out looking good in the final pdf.
+sub run_pdflatex {
+    my ($tex,$pdf)=@_;
+    my ($texbase,$tmpbase,$textmp,$printit);
+    local *TEX,*TMP;
+
+    # first fix references to eps figures (make sure that pdf versions exist!!!)
+    # make all changes in a temp tex file
+    ($texbase=$tex) =~ s/\.tex$//;
+    $tmpbase = "#${texbase}__tmp__#";
+    # take advantage of the pre-made .aux file from the original latex file,
+    # so pdflatex only needs to be run once
+    copy("${texbase}.aux","${tmpbase}.aux");
+    $textmp="${tmpbase}.tex";
+
+    # this code could be fancier and actually check for the pdf images to exist
+    print "Chaning references to eps figures in original tex file\n";
+    print "Warning: it's your responsibility to make sure the corresponding\n";
+    print "         PDF files exist!\n\n";
+
+    # begin changes to tex file
+    open(TEX,"< $tex") || die "Can't read from LaTeX file $tex: $!\n";
+    open(TMP,"> $textmp") || die "Can't write to temp file $textmp: $!\n";
+    select(TMP) || die "Can't make $textmp default filehandle: $!\n";
+
+  LINE:  # not needed yet, but we will if this code grows complex
+    $printit=1;
+    while (<TEX>) {
+	if (/includegraphics/) {
+	    s/\.eps//;
+	}
+    } continue {
+	if ($printit) { print }
+	else { $printit++ }
+    }
+    close(TEX);
+    close(TMP);
+    select(STDOUT);
+    
+    # now run the actual pdflatex converter
+    safe_system("$cmd{pdflatex} $textmp");
+    rename( "${tmpbase}.pdf",$pdf);
+    unlink ("${tmpbase}.out","${tmpbase}.aux","${tmpbase}.tex","${tmpbase}.log");
+} # end of run_pdflatex()
+
+#************************ end of code for <lyxpub.pl> *******************
+
+__END__
+
+
+=head1 OPTIONS
+
+-r NUM: set # of latex runs by hand (otherwise auto-determined)
+
+-o 'string': string with options to be passed to latex2html
+this string should be protected by single quotes to allow
+double quotes inside of it.
+
+-h: print this help.
+
+-v: print version info and quit.
+
+
+=head1 REQUIRES
+
+lyx (tested with v.1.1.6), latex, dvips, latex2html and pdflatex.
+
+
+=head1 TO DO
+
+=over
+
+=item * Get URLs right in pdf documents.
+
+=item * Automatically make pdf versions of any eps image in the latex file.
+
+=item * Clean up the improve_tex() code for readability.
+
+=item * More cmd line options.
+
+=item * Better documentation.
+
+=item * Better name?
+
+=back
+
+
+=head1 AUTHOR
+
+Fernando Pérez (fperez@pizero.colorado.edu)
+
+=cut
+
+#-----------------------------------------------------------------------------
+CHANGELOG:
+
+v. 0.1.1 (July 12 2001)
+   FIX:
+   - Small quoting bug.
+   - Clean up documentation.
+
+v. 0.1 (July 12 2001) - First release.
+
+#************************** end of file <lyxpub.pl> **********************
