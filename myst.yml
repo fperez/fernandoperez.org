@@ -14,6 +14,7 @@ project:
       children:
         - file: research/index.md
         - file: research/attic.md
+        - file: papers/index.md
     - title: Teaching
       children:
         - file: teaching/index.md
