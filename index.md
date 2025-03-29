@@ -1,8 +1,8 @@
 ---
 site:
+  hide_title_block: true
   hide_outline: true
   #hide_toc: true
-  hide_title_block: true
 ---
 
 ::::{div}
@@ -18,7 +18,8 @@ site:
 
   Fernando Pérez
   <span class="banner-subtext">
-  open science, open source, data & earth</span>
+  open science, open source, data & AI<br>
+  for life on earth</span>
   :::
 
 ::::
