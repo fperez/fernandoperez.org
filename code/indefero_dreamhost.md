@@ -1,10 +1,11 @@
-# Sharing Git repositories on Dreamhost with InDefero {#indefero_dreamhost}
+(indefero_dreamhost)=
+# Sharing Git repositories on Dreamhost with InDefero
 
 This document explains how to install the
 [InDefero](http://www.indefero.net/) project management system on a
 shared host like Dreamhost. They should also be useful for any other
-self-contained deployment with minor adjustments, as I\'ve tried to
-explain in detail a number of points that weren\'t too clear in the
+self-contained deployment with minor adjustments, as I've tried to
+explain in detail a number of points that weren't too clear in the
 original documentation. While these notes focus on Git, InDefero also
 supports Mercurial and SVN backends; the installation part of this
 document may still be useful to you even if you intend to use either of
@@ -13,7 +14,7 @@ those backends.
 I wanted to have a way of hosting my own Git repositories and projects
 for collaboration with colleagues. While I already use
 [github](http://github.com/fperez) for open source projects, I wanted an
-easy solution for private collaboration. For this type of work I don\'t
+easy solution for private collaboration. For this type of work I don't
 need all the bells and whistles of Github, my requirements are pretty
 simple:
 
@@ -29,25 +30,25 @@ simple:
 
 I looked around quite a bit, and InDefero seemed to fit the bill best.
 The various \*Forge alternatives are enormous beasts, from what I found
-online Trac\'s git support may still be a bit flaky (I found
+online Trac's git support may still be a bit flaky (I found
 discouraging comments about the plugin), Redmine looks neat but it
-requires a full Rails stack, which I\'m not really interested in getting
+requires a full Rails stack, which I'm not really interested in getting
 into, and gitosis may be just a tad too bare bones for what I wanted.
 But InDefero kept appearing as a good balance of the above, so I decided
-to give it a try. I\'d summarize it as a lightweight, google-code-like
+to give it a try. I'd summarize it as a lightweight, google-code-like
 project management system whose git backend design is inspired by
-gitosis. It also supports Hg and SVN backends, though I\'m not
-interested in those and won\'t discuss their configuration here (I
+gitosis. It also supports Hg and SVN backends, though I'm not
+interested in those and won't discuss their configuration here (I
 turned them off).
 
 So far I have been very satisfied in that I think it does precisely what
-I need. There are one or two minor things I\'d like to have that I miss
+I need. There are one or two minor things I'd like to have that I miss
 from Trac, but in the end they are all sugar I can live without, since
 they involve git history and log manipulations I can easily do with a
 local client.
 
-The one thing that wasn\'t too easy was the installation: the
-documentation isn\'t the best, the installation instructions are
+The one thing that wasn't too easy was the installation: the
+documentation isn't the best, the installation instructions are
 scattered across various documents, and a number of key steps are not
 explained at all (not even mentioned), so it took me a fair amount of
 time to get the whole thing working. I am putting together these notes
@@ -69,7 +70,7 @@ The key sets of instructions that this document complements are:
   installation.](http://projects.ceondo.com/p/indefero/page/Installation)
 - Installation on [Dreamhost with Mercurial
   backend](http://projects.ceondo.com/p/indefero/page/Installation-Dreamhost-Mercurial):
-  this comes closest to our needs, but it\'s missing a few key pieces of
+  this comes closest to our needs, but it's missing a few key pieces of
   information. Still, if something is missing in my notes, see this
   document.
 - Configuring [the InDefero Git
@@ -101,8 +102,8 @@ path variables are all properly configured:
 
 I also use a little python script called
 [unpack](http://arctrix.com/nas/python/unpack) that knows how to unpack
-zip, tar, gzip, bz2 and other formats with a single call, so I don\'t
-have to constantly remember what to type. If you don\'t use `unpack`,
+zip, tar, gzip, bz2 and other formats with a single call, so I don't
+have to constantly remember what to type. If you don't use `unpack`,
 simply substitute the appropriate `tar/unzip` commands as needed.
 
 ## Dreamhost configuration
@@ -117,11 +118,11 @@ Basically, you will need:
 - A new user whose purpose will be only to manage the Git repositories,
   and who will receive the SSH keys of your InDefero users.
 
-We\'ll now see these in detail.
+We'll now see these in detail.
 
 ### Domain configuration and file layout
 
-Since on a shared host I can\'t install in `/home/www` as the default
+Since on a shared host I can't install in `/home/www` as the default
 instructions suggest, I made a separate directory for the InDefero
 installation, along with a sub-domain pointing to it. In these
 instructions, I will use `example.com` as the generic domain and `site`
@@ -157,7 +158,7 @@ The `www/` directory where files actually get served from only contains:
     media -> ../indefero/www/media/
 
 A local directory is needed for the actual git repositories. The
-InDefero suggested layout can\'t be used on a shared host, which is why
+InDefero suggested layout can't be used on a shared host, which is why
 there is a `git_repos` subdirectory shown above. This will be put in the
 InDefero config file later.
 
@@ -180,9 +181,9 @@ precisely what I changed from the default install.
 
 ### MySQL
 
-One thing the instructions didn\'t mention even in passing, is the
+One thing the instructions didn't mention even in passing, is the
 separate MySQL configuration steps required. This may be common
-knowledge for someone used to PHP, but it wasn\'t for me. Using the
+knowledge for someone used to PHP, but it wasn't for me. Using the
 Dreamhost panel, I made an SQL database with:
 
     User: USER
@@ -197,18 +198,18 @@ mysql -u USER -p -h mysql.site.example.com examplecom_site
 
 ### Local user for Git management
 
-We need a user to manage the git transactions. All tutorials I\'ve found
+We need a user to manage the git transactions. All tutorials I've found
 suggest the creation of a dedicated user called `git`. On dreamhost this
 username is already taken, so I made another user (call it `git2`), and
 also created a custom group to which both `git2` and my normal user will
 belong. As long as this information is given to the proper InDefero
 config variables, the actual name of the user is irrelevant.
 
-In the git user\'s home directory, don\'t forget to make the `.ssh`
+In the git user's home directory, don't forget to make the `.ssh`
 directory with the proper permissions and make an empty
 `authorized_keys` file. The InDefero instructions for the SyncGit plugin
 explain this, but they assume you have sudo access. On a shared host
-this isn\'t the case, so you must do it manually by logging in as the
+this isn't the case, so you must do it manually by logging in as the
 new user, and then running the rest of the commands. For reference
 (substitute `git2` with the name of your git user):
 
@@ -228,9 +229,9 @@ Note
 :::
 
 On the Dreamhost panel, when creating the new user, do *not* select
-\"enhanced security\", because we need this new user to be able to share
-a group with the normal user, and if I understand correctly, \"enhanced
-security\" would lock down the new user too much.
+"enhanced security", because we need this new user to be able to share
+a group with the normal user, and if I understand correctly, "enhanced
+security" would lock down the new user too much.
 ::::
 
 ## Installing all the prerequisites
@@ -240,9 +241,9 @@ security\" would lock down the new user too much.
 As suggested by [this
 post](http://www.ivankuznetsov.com/2009/07/setting-up-ruby-rails-git-and-redmine-on-dreamhost.html),
 I built OpenSSL and Curl, as they provide some extra functionality to
-the Git we\'ll build (the one on Dreamhost is very old). In my case they
-may not have been 100% necessary, as right now I don\'t intend to have
-my InDefero repositories pulling, but it\'s easy enough to do as part of
+the Git we'll build (the one on Dreamhost is very old). In my case they
+may not have been 100% necessary, as right now I don't intend to have
+my InDefero repositories pulling, but it's easy enough to do as part of
 the whole build. They are perfectly straightforward. First, the latest
 openssl:
 
@@ -334,7 +335,7 @@ run a simple `make install`.
 
 The indefero docs put this later, but to be 100% sure that all
 subsequent pear/php commands run using the proper versions, I think
-it\'s safest to first set up the environment by putting this into the
+it's safest to first set up the environment by putting this into the
 bashrc file and reloading:
 
 ``` bash
@@ -344,8 +345,8 @@ export PATH=$HOME/usr/pear:/usr/local/php5/bin:$PATH
 ```
 
 Now, we can do a local pear install. It seems pear also needs some
-caching directories, and I don\'t know enough about it to be sure it\'s
-safe to have the caching directories below the root pear path, so I\'m
+caching directories, and I don't know enough about it to be sure it's
+safe to have the caching directories below the root pear path, so I'm
 keeping them separate. I made the following directories:
 
 ``` bash
@@ -356,7 +357,7 @@ mkdir -p ~/usr/var/pear/temp
 `~/usr/pear` will be the root pear tree, and `~/usr/var` will hold
 server-style data in a single location, and will use that for the PEAR
 temporary directories. The indefero installation instructions suggest
-using `~/tmp/pear`, but I don\'t like keeping anything that I can\'t
+using `~/tmp/pear`, but I don't like keeping anything that I can't
 simply destroy on `~/tmp`, so I used this layout instead.
 
 Now I can create the pear config:
@@ -421,7 +422,7 @@ $HOME/tmpear/bin/pear config-create $HOME/usr .pearrc
 $HOME/tmpear/bin/pear install -of PEAR
 ```
 
-Notice the -f flag, otherwise it won\'t reinstall it:
+Notice the -f flag, otherwise it won't reinstall it:
 
 ``` bash
 rm -rf $HOME/tmpear
@@ -470,7 +471,7 @@ Then, with those variables I constructed the values for everything below
 in the actual file, minimizing repetition of paths and making the whole
 thing a bit easier to understand (for me).
 
-In particular, don\'t forget that the MySQL information must then be
+In particular, don't forget that the MySQL information must then be
 properly put into the php configuration file also:
 
 ``` php
@@ -507,7 +508,7 @@ the following should work, executed in the `indefero/src` directory:
     Pluf_Migrations_Install_setup
     IDF_Migrations_Install_setup
 
-Next, run the boostrap script to create the first user. Once that\'s
+Next, run the boostrap script to create the first user. Once that's
 working, use this .htaccess file:
 
     Options +FollowSymLinks
@@ -531,14 +532,14 @@ Note
 By default, InDefero does *not* create empty repositories on the server,
 nor is there an option to do so. The recommended workflow is simply to
 create the project on the server, then make a local repository and push
-to the InDefero host (the \'Source\' tab for each project has nice
+to the InDefero host (the 'Source' tab for each project has nice
 copy/paste instructions for this).
 ::::
 
 ## New users
 
-InDefero is meant as a public forge, but in my case I don\'t actually
-need outsiders to create new accounts, and in fact I don\'t want the
+InDefero is meant as a public forge, but in my case I don't actually
+need outsiders to create new accounts, and in fact I don't want the
 functionality. I will create new accounts manually only for
 collaborators I am going to work with, and this is easily done by
 running again the bootstrap script with different user information.
@@ -546,7 +547,7 @@ These users can then change their password via the web interface to
 whatever they want.
 
 I actually disabled new account creation by simply commenting out from
-`src/IDF/templates/idf/login_form.html` the \"I am new here\" entry that
+`src/IDF/templates/idf/login_form.html` the "I am new here" entry that
 normally leads to the new account page. Just surround the relevant line
 with `{*` and `*}` comment markers:
 
@@ -594,12 +595,12 @@ the special git user* and understanding how the keys are managed.
 
 Your InDefero users do not have shell access to your server; in order to
 use the repositories they must upload their SSH public key through the
-web interface. Every time a user\'s SSH key is uploaded, InDefero leaves
+web interface. Every time a user's SSH key is uploaded, InDefero leaves
 a little temporary file (its name is stored as
 `$cfg['idf_plugin_syncgit_sync_file']`) and InDefero ships with a php
 script that detects this file and syncs the SSH key from the database
 over to the `~/.ssh/authorized_keys` file of the special git user. You
-can run this script manually to sync users, and it\'s a good idea to
+can run this script manually to sync users, and it's a good idea to
 leave it as a cron job in case users update their SSH keys later; the
 script is `indefero/scripts/gitcron.php`.
 
@@ -607,13 +608,13 @@ An important point is that when these keys are uploaded, they do *not*
 give your InDefero users unrestricted login access, as this would defeat
 the isolation between projects that InDefero offers. Their SSH keys are
 saved as authorized, but *only* to run a single command, a little python
-script called `indefero/scripts/gitserve.py` that checks that user\'s
+script called `indefero/scripts/gitserve.py` that checks that user's
 permissions in the database, and only gives them access to the
 repositories consistent with those permissions. This ensures that the
 special git user is not a security hole that would allow one user who
-knew the path to another repository he\'s normally not allowed access,
+knew the path to another repository he's normally not allowed access,
 to read it bypassing the web interface. Many thanks to Loic
-D\'Anterroches, the InDefero project lead, for clarifying this point.
+D'Anterroches, the InDefero project lead, for clarifying this point.
 
 ## Backing things up
 
@@ -673,7 +674,7 @@ $git gc
 ```
 
 Since this script has to hold your SQL password in plain text, make it
-read-execute only for your user, and don\'t use an important password
+read-execute only for your user, and don't use an important password
 there. Alternatively, if you want to play it safer, you can take the
 password as an argument and initiate the backup process remotely over
 SSH, from a trusted host. For my purposes this is sufficient.
@@ -682,9 +683,9 @@ Once the SQL database is nicely backed up in our site directory, the
 entire project state consists of plain files, and we can simply rsync it
 nightly to a remote host for off-site backup.
 
-That\'s it. Every night the SQL database is backed up, and git gives us
+That's it. Every night the SQL database is backed up, and git gives us
 a revision history that is also very space efficient, as the gc step
-ensures that days with no real changes don\'t take any extra space on
+ensures that days with no real changes don't take any extra space on
 disk (I tested this). A regular rsync off-site ensures that I have the
 entire site state and history safely stored, should anything happen at
 Dreamhost.
@@ -693,7 +694,7 @@ Dreamhost.
 
 So far I think InDefero does what I need it to. I hope to clarify a few
 small questions I have on the list (the author has been very responsive
-to my queries so far), but I think I\'ll stick with it.
+to my queries so far), but I think I'll stick with it.
 
 A few final points that I did not cover in these notes but that you may
 need in your own setup:
@@ -703,7 +704,7 @@ Email
 > I did not configure email delivery, as I only expect to make a few new
 > users and I will do it by hand. [Jacobo](http://blog.jacobodevera.com)
 > notes that if you eliminate from the IDF config file all email-related
-> options, then the PEAR Mail module\'s defaults should work; I haven\'t
+> options, then the PEAR Mail module's defaults should work; I haven't
 > tested this myself.
 
 Git-daemon
@@ -712,4 +713,4 @@ Git-daemon
 > the basic Dreamhost plan does not allow me to run daemons. However,
 > git-daemon is only needed if you want to provide anonymous access to
 > your repositories. This is not my case (I use github.com for all my
-> public code), so I didn\'t look further into this topic.
+> public code), so I didn't look further into this topic.
