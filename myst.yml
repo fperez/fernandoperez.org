@@ -57,7 +57,8 @@ site:
       url: /teaching
     - title: Code
       url: /py4science
-    - title: Blog
-      url: https://fdoperez.blogspot.com
     - title: About
       url: /about
+  actions:
+    - title: Blog
+      url: https://fdoperez.blogspot.com
