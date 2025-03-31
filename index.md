@@ -1,4 +1,5 @@
 ---
+# The landing page works best without the regular page title buttons and right panel outline. I am leaving the TOC on for now, still deciding...
 site:
   hide_title_block: true
   hide_outline: true
@@ -18,8 +19,8 @@ site:
 
   Fernando Pérez
   <span class="banner-subtext">
-  open science, open source, data & AI<br>
-  for life on earth</span>
+  open science, open source, data & AI for life on earth
+  </span>
   :::
 
 ::::
