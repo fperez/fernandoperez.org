@@ -26,6 +26,15 @@ project:
         - file: teaching/scicomp_course.md
         - file: teaching/udea_2010.md
         - file: teaching/uniandes_2010.md
+        - title: Git
+          children:
+            - file: teaching/git-intro/intro.ipynb
+            - file: teaching/git-intro/configuration.ipynb
+            - file: teaching/git-intro/local.ipynb
+            - file: teaching/git-intro/branch.ipynb
+            - file: teaching/git-intro/remote.ipynb        
+            - file: teaching/git-intro/conflict.ipynb
+            - file: teaching/git-intro/git-visuals.ipynb
     - title: Code
       children:
         - file: code/index.md
