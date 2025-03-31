@@ -46,7 +46,7 @@ project:
 site:
   template: book-theme
   options:
-    logo: resources/fperez-tiny.jpg
+    logo: resources/fperez-tiny-bw.png
     style: resources/style.css
     favicon: resources/favicon.ico
     folders: true
