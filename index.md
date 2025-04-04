@@ -48,7 +48,7 @@ I am convinced that we need better tools for scientific computing, and that our 
 :::{note} Photo note: the mountains
 :class: dropdown
 
-The picture at the top is Colorado's incredible Continental Divide, specifically the Indian Peaks range, shot from [Brainard Lake](http://maps.google.com/maps/place?cid=1317471477502605538&q=brainard+lake,+colorado&hl=en) during a [beautiful fall day in 2004](https://photos.app.goo.gl/a3T1FoFUuaskh41JA). On the descent from that hike I spotted a great-looking [little couloir](https://photos.app.goo.gl/NQQKFGVR3QklzPZ52) that provided for a very nice [alpine day](https://photos.app.goo.gl/NQQKFGVR3QklzPZ52) one week later. Having that terrain 45 minutes from home is one thing (among many) that makes the Colorado Front Range the most amazing place to live I've known.
+The picture at the top is Colorado's incredible Continental Divide, specifically the Indian Peaks range, shot from [Brainard Lake](http://maps.google.com/maps/place?cid=1317471477502605538&q=brainard+lake,+colorado&hl=en) during a [beautiful fall day in 2006](https://photos.app.goo.gl/a3T1FoFUuaskh41JA). On the descent from that hike I spotted a great-looking [little couloir](https://photos.app.goo.gl/NQQKFGVR3QklzPZ52) that provided for a very nice [alpine day](https://photos.app.goo.gl/NQQKFGVR3QklzPZ52) one week later. Having that terrain 45 minutes from home is one thing (among many) that makes the Colorado Front Range the most amazing place to live I've known.
 :::
 
 
