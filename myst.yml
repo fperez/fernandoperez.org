@@ -66,7 +66,7 @@ site:
   # For now, the book-theme template is the most appropriate for a general site
   template: book-theme
   options:
-    logo: resources/fperez-tiny-bw.png
+    logo: resources/fperez-icon-color.jpg
     style: resources/style.css
     favicon: resources/favicon.ico
     # This ensures that URLs aren't flattened, and instead match the 
