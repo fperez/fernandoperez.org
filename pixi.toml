@@ -1,0 +1,13 @@
+[workspace]
+authors = ["Fernando Perez <fernando.perez@berkeley.edu>"]
+channels = ["conda-forge"]
+name = "fernandoperez.org"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+preview = "myst start"
+render = "myst build --strict --html"
+
+[dependencies]
+mystmd = ">=1.10.1,<2"
