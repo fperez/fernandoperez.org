@@ -1,13 +1,83 @@
+# Pixi workspace for fernandoperez.org — a MyST (https://mystmd.org) website.
+#
+# Quick start (https://pixi.sh to install pixi):
+#
+#   pixi run start        # live-preview the site at http://localhost:3000
+#   pixi run build        # build the static HTML site into _build/html
+#   pixi run serve        # serve the built _build/html locally (check before deploy)
+#   pixi run check-links  # build and report broken external links
+#   pixi run clean        # remove all MyST build artifacts
+#   pixi task list        # see every available task
+#
+# Deployment happens automatically on push to `main` via
+# .github/workflows/deploy.yml, which runs `pixi run build-ci` using the same
+# locked environment (pixi.lock) as local builds.
+#
+# Two environments are defined:
+#   - default: just MyST + Node + cwebp; all that's needed to build/deploy.
+#   - exec:    adds a Python/Jupyter kernel and scientific stack, so pages with
+#              executable code (e.g. code/mdexec.md, code/nbexec.ipynb) can be
+#              (re)executed with `pixi run -e exec build-exec` / `start-exec`.
+
 [workspace]
+name = "fernandoperez.org"
+version = "0.1.0"
+description = "Sources for Fernando Perez's personal website, built with MyST"
 authors = ["Fernando Perez <fernando.perez@berkeley.edu>"]
 channels = ["conda-forge"]
-name = "fernandoperez.org"
-platforms = ["osx-arm64"]
-version = "0.1.0"
+# linux-64 is required for the GitHub Actions deploy; the others for local work.
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+requires-pixi = ">=0.50"
+
+# --------------------------------------------------------------------------
+# Default environment: what's needed to build and deploy the site.
+# --------------------------------------------------------------------------
+[dependencies]
+mystmd = ">=1.13.0,<2"
+# MyST's CLI runs on Node; pin explicitly so we don't depend on a system Node.
+nodejs = ">=22"
+# cwebp (from libwebp): when present, MyST emits optimized .webp versions of
+# site images. (imagemagick is also used by MyST for PDF/LaTeX exports, but is
+# deliberately omitted: it pulls in GTK/graphviz and isn't needed for HTML.)
+libwebp = "*"
 
 [tasks]
-preview = "myst start"
-render = "myst build --strict --html"
+# --- Local development -------------------------------------------------------
+start = { cmd = "myst start", description = "Live-preview the site (http://localhost:3000) with auto-reload" }
+preview = { depends-on = ["start"], description = "Alias for `start`" }
 
-[dependencies]
-mystmd = ">=1.10.1,<2"
+# --- Building ----------------------------------------------------------------
+build = { cmd = "myst build --html --strict", description = "Build the static HTML site into _build/html (fails on errors)" }
+render = { depends-on = ["build"], description = "Alias for `build`" }
+# Used by GitHub Actions; BASE_URL='' because the site is served from the domain root.
+build-ci = { cmd = "myst build --html --strict --ci", env = { BASE_URL = "" }, description = "Build for deployment (used by GitHub Actions)" }
+
+# --- Quality checks ----------------------------------------------------------
+check-links = { cmd = "myst build --html --check-links", description = "Build and report any broken external links" }
+
+# --- Local serving of the built site -----------------------------------------
+serve = { cmd = "python -m http.server --directory _build/html {{ port }}", args = [{ arg = "port", default = "8000" }], depends-on = ["build"], description = "Build, then serve _build/html locally (default port 8000)" }
+
+# --- Housekeeping ------------------------------------------------------------
+clean = { cmd = "myst clean --all --yes", description = "Remove all MyST build outputs, caches and templates" }
+upgrade-myst = { cmd = "pixi upgrade mystmd nodejs", description = "Upgrade MyST/Node to latest versions and update pixi.lock" }
+
+# --------------------------------------------------------------------------
+# Optional `exec` environment: Python kernel for executing notebooks/code cells.
+# --------------------------------------------------------------------------
+[feature.exec.dependencies]
+python = "3.13.*"
+ipykernel = "*"
+ipython = "*"
+numpy = "*"
+matplotlib-base = "*"
+markdown = "*"
+
+[feature.exec.tasks]
+start-exec = { cmd = "myst start --execute", description = "Live-preview the site, executing notebooks and code cells" }
+build-exec = { cmd = "myst build --html --strict --execute", description = "Build the site, executing notebooks and code cells" }
+clean-exec = { cmd = "myst clean --execute --yes", description = "Clear the MyST execution cache" }
+
+[environments]
+default = { solve-group = "default" }
+exec = { features = ["exec"], solve-group = "default" }
