@@ -5,7 +5,7 @@ project:
   title: Fernando's website.
   description: My personal and professional Website.
   github: https://github.com/fperez/fernandoperez.org
-  license: CC-BY-4.0  
+  license: CC-BY-4.0
   # auto-generated uuid
   id: 91faf804-411b-4761-88ca-7b552cc27bc5
   
@@ -54,6 +54,11 @@ project:
             - file: py4science/workshop_geilo_2013.md
             - file: py4science/workshop_hawaii_2012.md
             - file: py4science/profiling/index.md
+        - file: code/mdexec.md
+        - file: code/nbexec.ipynb
+    - title: New Blog
+      children:
+        - file: blog/260210-dreams-of-jupyter-ai.md
     - file: about.md
     - file: contact.md
         
